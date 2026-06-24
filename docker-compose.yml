@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgis/postgis:16-3.4
+    container_name: willy_db
+    environment:
+      POSTGRES_DB: willy_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    container_name: willy_backend
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@db:5432/willy_db
+      DEBUG: "False"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      CORS_ALLOW_ALL_ORIGINS: "True"
+      DJANGO_SETTINGS_MODULE: config.settings.base
+    ports:
+      - "8000:8000"
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
